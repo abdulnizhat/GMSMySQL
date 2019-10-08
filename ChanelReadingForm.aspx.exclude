@@ -1,0 +1,233 @@
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/MasterPage.master" AutoEventWireup="true" CodeFile="ChanelReadingForm.aspx.cs" Inherits="ChanelReadingForm" %>
+
+<asp:Content ID="Content1" ContentPlaceHolderID="MainContent" runat="Server">
+    <link rel="stylesheet" href="css/jquery-ui.css" type="text/css" media="all" />
+    <link rel="stylesheet" href="css/ui.theme.css" type="text/css" media="all" />
+    <script src="Scripts/jquery.min.js" type="text/javascript"></script>
+    <script src="Scripts/jquery-ui.min.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(function () {
+
+            $("#<%= txtDate.ClientID  %>").datepicker({ dateFormat: 'dd-mm-yy' });
+        });
+    </script>
+    <h3><%: Title %>Reading Form</h3>
+    <asp:MultiView ID="MultiView1" runat="server">
+        <asp:View ID="View1" runat="server">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <div class="col-md-10">
+                                <asp:Button runat="server" ID="btnAddReading" Text="Add New" OnClick="btnAddReading_Click" CssClass="btn btn-primary" />
+
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+
+                            <div class="col-md-2">
+                                <asp:Label ID="Label1" runat="server" Text="Date From"></asp:Label>
+                                <asp:TextBox ID="txtfromDate" runat="server" CssClass="form-control" placeHolder="DD-MM-YYYY"></asp:TextBox>
+                            </div>
+                            <div class="col-md-2">
+                                <asp:Label ID="Label2" runat="server" Text="To"></asp:Label>
+                                <asp:TextBox ID="txtToDate" runat="server" CssClass="form-control" placeHolder="DD-MM-YYYY"></asp:TextBox>
+                            </div>
+                            <div class="col-md-3">
+                                <asp:Label ID="Label3" runat="server" Text="Instrument"></asp:Label>
+                                <asp:DropDownList ID="ddlInstrumentName" runat="server" CssClass="form-control">
+                                    <asp:ListItem Selected="True">--Select--</asp:ListItem>
+                                    <asp:ListItem>RML/DTI/01</asp:ListItem>
+                                    <asp:ListItem>RML/DTI/02</asp:ListItem>
+                                </asp:DropDownList>
+
+                            </div>
+                            <div class="col-md-3" style="margin-top: 20px">
+                                <asp:Button runat="server" ID="btnPrint" Text="Print" OnClick="btnPrint_Click" CssClass="btn btn-primary" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-10">
+                            <asp:Panel ID="pnlgag" runat="server" Width="100%" ScrollBars="Auto">
+                                <asp:GridView ID="grdChanelReading" runat="server" Width="100%" AutoGenerateColumns="false"
+                                     CssClass="table table-bordered table-responsive" PageSize="15" AllowPaging="true" OnPageIndexChanging="grdChanelReading_PageIndexChanging">
+                                    <HeaderStyle CssClass="header" />
+                                    <Columns>
+                                        <asp:BoundField DataField="id" HeaderText="Id" />
+                                        <asp:BoundField DataField="Instrument_Name" HeaderText="Instrument Name" />
+                                        <asp:BoundField DataField="ch1" HeaderText="CH-1" />
+                                        <asp:BoundField DataField="ch2" HeaderText="CH-2" />
+                                       <asp:TemplateField HeaderText="Action" HeaderStyle-Width="75px" Visible="false">
+                                            <ItemTemplate>
+                                                <asp:LinkButton ID="btnEdit" runat="server" OnClick="btnEdit_Click" CommandArgument='<%# Eval("id")%>' class="btn btn-sm btn-info" title="Update"><i class="glyphicon glyphicon-pencil"></i></asp:LinkButton>
+                                            </ItemTemplate>
+                                        </asp:TemplateField>
+                                    </Columns>
+                                    <EmptyDataTemplate>No data exist.</EmptyDataTemplate>
+                                </asp:GridView>
+                            </asp:Panel>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </asp:View>
+
+        <asp:View ID="View2" runat="server">
+            <div class="row">
+                <div class="col-md-offset-2 col-md-12">
+                    <div class="form-horizontal">
+                        <%-- <h4>Branch Master</h4>--%>
+                        <br />
+                        <asp:PlaceHolder runat="server" ID="ErrorMessage" Visible="false">
+                            <p class="text-danger">
+                                <asp:Literal runat="server" ID="FailureText" />
+                            </p>
+                        </asp:PlaceHolder>
+                        <asp:Label ID="lblId" runat="server" Visible="false"></asp:Label>
+
+                        <div class="form-group">
+                            <asp:Label runat="server" CssClass="col-md-2 control-label">Instrument Name<b style="color: Red">*</b></asp:Label>
+                            <div class="col-md-10">
+                                <asp:TextBox runat="server" TabIndex="1" ID="txtInstrumentName" CssClass="form-control" />
+                                <asp:RequiredFieldValidator ValidationGroup="v" Display="Dynamic" runat="server" ControlToValidate="txtInstrumentName"
+                                    CssClass="text-danger" ErrorMessage="Date field is required." />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <asp:Label runat="server" CssClass="col-md-2 control-label">Date<b style="color: Red">*</b></asp:Label>
+                            <div class="col-md-10">
+                                <asp:TextBox runat="server" TabIndex="2" placeHolder="DD-MM-YYYY" ID="txtDate" CssClass="form-control" />
+                                <asp:RequiredFieldValidator ValidationGroup="v" Display="Dynamic" runat="server" ControlToValidate="txtDate"
+                                    CssClass="text-danger" ErrorMessage="Date field is required." />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <asp:Label runat="server" CssClass="col-md-2 control-label">Hours<b style="color: Red">*</b></asp:Label>
+                            <div class="col-md-10">
+                                <asp:DropDownList ID="ddlhours" runat="server" CssClass="form-control">
+                                    <asp:ListItem>1</asp:ListItem>
+                                    <asp:ListItem>2</asp:ListItem>
+                                    <asp:ListItem>3</asp:ListItem>
+                                    <asp:ListItem>4</asp:ListItem>
+                                    <asp:ListItem>5</asp:ListItem>
+                                    <asp:ListItem>6</asp:ListItem>
+                                    <asp:ListItem>7</asp:ListItem>
+                                    <asp:ListItem>8</asp:ListItem>
+                                    <asp:ListItem>9</asp:ListItem>
+                                    <asp:ListItem>10</asp:ListItem>
+                                    <asp:ListItem>11</asp:ListItem>
+                                    <asp:ListItem>12</asp:ListItem>
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <asp:Label runat="server" CssClass="col-md-2 control-label">Minut<b style="color: Red">*</b></asp:Label>
+                            <div class="col-md-10">
+                                <asp:DropDownList ID="ddlMinute" runat="server" CssClass="form-control">
+                                    <asp:ListItem>00</asp:ListItem>
+                                    <asp:ListItem>1</asp:ListItem>
+                                    <asp:ListItem>2</asp:ListItem>
+                                    <asp:ListItem>3</asp:ListItem>
+                                    <asp:ListItem>4</asp:ListItem>
+                                    <asp:ListItem>5</asp:ListItem>
+                                    <asp:ListItem>6</asp:ListItem>
+                                    <asp:ListItem>7</asp:ListItem>
+                                    <asp:ListItem>8</asp:ListItem>
+                                    <asp:ListItem>9</asp:ListItem>
+                                    <asp:ListItem>10</asp:ListItem>
+                                    <asp:ListItem>11</asp:ListItem>
+                                    <asp:ListItem>13</asp:ListItem>
+                                    <asp:ListItem>14</asp:ListItem>
+                                    <asp:ListItem>15</asp:ListItem>
+                                    <asp:ListItem>16</asp:ListItem>
+                                    <asp:ListItem>17</asp:ListItem>
+                                    <asp:ListItem>18</asp:ListItem>
+                                    <asp:ListItem>19</asp:ListItem>
+                                    <asp:ListItem>20</asp:ListItem>
+                                    <asp:ListItem>21</asp:ListItem>
+                                    <asp:ListItem>22</asp:ListItem>
+                                    <asp:ListItem>23</asp:ListItem>
+                                    <asp:ListItem>24</asp:ListItem>
+                                    <asp:ListItem>25</asp:ListItem>
+                                    <asp:ListItem>26</asp:ListItem>
+                                    <asp:ListItem>27</asp:ListItem>
+                                    <asp:ListItem>28</asp:ListItem>
+                                    <asp:ListItem>29</asp:ListItem>
+                                    <asp:ListItem>30</asp:ListItem>
+                                    <asp:ListItem>31</asp:ListItem>
+                                    <asp:ListItem>32</asp:ListItem>
+                                    <asp:ListItem>33</asp:ListItem>
+                                    <asp:ListItem>34</asp:ListItem>
+                                    <asp:ListItem>35</asp:ListItem>
+                                    <asp:ListItem>36</asp:ListItem>
+                                    <asp:ListItem>37</asp:ListItem>
+                                    <asp:ListItem>38</asp:ListItem>
+                                    <asp:ListItem>39</asp:ListItem>
+                                    <asp:ListItem>40</asp:ListItem>
+                                    <asp:ListItem>41</asp:ListItem>
+                                    <asp:ListItem>42</asp:ListItem>
+                                    <asp:ListItem>43</asp:ListItem>
+                                    <asp:ListItem>44</asp:ListItem>
+                                    <asp:ListItem>45</asp:ListItem>
+                                    <asp:ListItem>46</asp:ListItem>
+                                    <asp:ListItem>47</asp:ListItem>
+                                    <asp:ListItem>48</asp:ListItem>
+                                    <asp:ListItem>49</asp:ListItem>
+                                    <asp:ListItem>50</asp:ListItem>
+                                    <asp:ListItem>51</asp:ListItem>
+                                    <asp:ListItem>55</asp:ListItem>
+                                    <asp:ListItem>53</asp:ListItem>
+                                    <asp:ListItem>54</asp:ListItem>
+                                    <asp:ListItem>55</asp:ListItem>
+                                    <asp:ListItem>56</asp:ListItem>
+                                    <asp:ListItem>57</asp:ListItem>
+                                    <asp:ListItem>58</asp:ListItem>
+                                    <asp:ListItem>59</asp:ListItem>
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <asp:Label runat="server" CssClass="col-md-2 control-label">Time<b style="color: Red">*</b></asp:Label>
+                            <div class="col-md-10">
+                                <asp:DropDownList ID="ddlTime" runat="server" CssClass="form-control">
+                                    <asp:ListItem>AM</asp:ListItem>
+                                    <asp:ListItem>PM</asp:ListItem>
+                                </asp:DropDownList>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <asp:Label runat="server" CssClass="col-md-2 control-label">CH-1<b style="color: Red">*</b></asp:Label>
+                            <div class="col-md-10">
+                                <asp:TextBox runat="server" ID="txtCh1" TabIndex="1" CssClass="form-control" MaxLength="45" />
+                                <asp:RequiredFieldValidator runat="server" SetFocusOnError="true" ControlToValidate="txtCh1" 
+                                    ValidationGroup="v"  Display="Dynamic" CssClass="text-danger" ErrorMessage="Required." />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <asp:Label runat="server" CssClass="col-md-2 control-label">CH-2<b style="color: Red">*</b></asp:Label>
+                            <div class="col-md-10">
+                                <asp:TextBox runat="server" ID="txtCh2" TabIndex="2" CssClass="form-control" MaxLength="18" />
+                                <asp:RequiredFieldValidator runat="server" SetFocusOnError="true" ValidationGroup="v" 
+                                   Display="Dynamic"  ControlToValidate="txtCh2" CssClass="text-danger" ErrorMessage="Required." />
+                            </div>
+                        </div>
+                        <div class="col-md-offset-2 col-md-6">
+                            <div class="col-md-2">
+                                <asp:Button runat="server" ID="btnSave" TabIndex="3" OnClick="btnSave_Click" Text="Save" ValidationGroup="v" CssClass="btn btn-primary" />
+                            </div>
+                            <div class="col-md-3">
+                                <asp:Button runat="server" ID="btnClose" TabIndex="4" OnClick="btnClose_Click" Text="Close" CssClass="btn btn-primary" CausesValidation="False" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </asp:View>
+    </asp:MultiView>
+</asp:Content>
+
+

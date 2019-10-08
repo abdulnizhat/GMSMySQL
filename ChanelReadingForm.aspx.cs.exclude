@@ -1,0 +1,185 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class ChanelReadingForm : System.Web.UI.Page
+{
+    Genreal g = new Genreal();
+    string dbname = "test1";
+    SqlConnection sqlcon = new SqlConnection();
+    SqlCommand sqlcmd = new SqlCommand();
+    SqlDataAdapter da = new SqlDataAdapter();
+    DataTable dt = new DataTable();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (Session["User_ID"] != null && Session["Customer_ID"] != null)
+        {
+            if (!Page.IsPostBack)
+            {
+                MultiView1.ActiveViewIndex = 0;
+                bindChanelReadingGrid();
+                btnAddReading.Focus();
+                //imglogo.ImageUrl = "~/Images/"+"Arsheen  house.png";
+            }
+
+        }
+        else
+        {
+            Response.Redirect("Login.aspx");
+        }
+    }
+
+    private void bindChanelReadingGrid()
+    {
+        try
+        {
+            using (TTMSDataClassesDataContext ds = new TTMSDataClassesDataContext())
+            {
+                var result =( from d in ds.TempTableChanelReadingTBs
+                             select new { d.id, d.ch1, d.ch2, d.Instrument_Name}).OrderByDescending(s=> s.id);
+                if (result.Any())
+                {
+                    grdChanelReading.DataSource = result;
+                    grdChanelReading.DataBind();
+                }
+                else
+                {
+                    grdChanelReading.DataSource = null;
+                    grdChanelReading.DataBind();
+                }
+            }
+            
+        }
+        catch (Exception ex)
+        {
+            g.ShowMessage(this.Page, ex.Message);
+        }
+    }
+    protected void btnPrint_Click(object sender, EventArgs e)
+    {
+        try
+        {
+
+            if (String.IsNullOrEmpty(txtfromDate.Text) || String.IsNullOrEmpty(txtfromDate.Text) || ddlInstrumentName.SelectedIndex==0)
+            {
+                return;
+            }
+            else
+            {
+                //Response.Redirect("MSADueStatusReportViewer.aspx?calibId=" + calibId);
+                string threeParameter = txtfromDate.Text;
+                threeParameter = threeParameter + "," + txtToDate.Text + "," + ddlInstrumentName.SelectedItem.Text;
+                string ss = "window.open('ChanelReadingReportViewer.aspx?threeParameter=" + threeParameter + "," + "Type=All','mywindow','width=1000,height=700,left=200,top=1,screenX=100,screenY=100,toolbar=no,location=no,directories=no,status=yes,menubar=no,scrollbars=yes,copyhistory=yes,resizable=no')";
+                string script = "<script language='javascript'>" + ss + "</script>";
+                ScriptManager.RegisterStartupScript(this, this.GetType(), "PopUpWindow", script, false);
+            }
+        }
+        catch (Exception ex)
+        {
+            g.ShowMessage(this.Page, ex.Message);
+        }
+    }
+    protected void btnAddReading_Click(object sender, EventArgs e)
+    {
+        MultiView1.ActiveViewIndex = 1;
+        txtCh1.Focus();
+    }
+    protected void btnSave_Click(object sender, EventArgs e)
+    {
+
+        //string strIsDone = g.BackUpDB();
+        //if (strIsDone=="OK")
+        //{
+        //   g.ShowMessage(this.Page,"Backup is done.");
+        //}
+        //else
+        //{
+        //    g.ShowMessage(this.Page, "Backup is not done.");
+        //}
+        string date = null;
+        date = txtDate.Text;
+        using (TTMSDataClassesDataContext ds = new TTMSDataClassesDataContext())
+        {
+            TempTableChanelReadingTB bt = new TempTableChanelReadingTB();
+            bt.ch1 = txtCh1.Text;
+            bt.ch2 = txtCh2.Text;
+            DateTime dtime = DateTime.ParseExact(date, "dd-MM-yyyy", CultureInfo.InvariantCulture);
+            date = dtime.ToString("yyyy-MM-dd");
+            bt.Hours = ddlhours.SelectedItem.Text;
+            bt.Minut = ddlMinute.SelectedItem.Text;
+            bt.Time = ddlTime.SelectedItem.Text;
+            bt.date_Time = Convert.ToDateTime(date);
+            bt.Instrument_Name = txtInstrumentName.Text;
+            ds.TempTableChanelReadingTBs.InsertOnSubmit(bt);
+            ds.SubmitChanges();
+            g.ShowMessage(this.Page, "Chanel Reading saved successfully.");
+        }
+    }
+    protected void btnClose_Click(object sender, EventArgs e)
+    {
+        clearFields();
+    }
+    protected void grdChanelReading_PageIndexChanging(object sender, GridViewPageEventArgs e)
+    {
+        grdChanelReading.PageIndex = e.NewPageIndex;
+        bindChanelReadingGrid();
+    }
+    protected void btnEdit_Click(object sender, EventArgs e)
+    {
+
+    }
+    private void clearFields()
+    {
+        txtCh1.Text = "";
+        txtCh2.Text = "";
+        btnSave.Text = "Save";
+        lblId.Text = "";
+        ddlMinute.SelectedIndex = 0;
+        ddlhours.SelectedIndex = 0;
+        ddlTime.SelectedIndex = 0;
+        MultiView1.ActiveViewIndex = 0;
+        btnAddReading.Focus();
+        bindChanelReadingGrid();
+    }
+
+
+    private void BackUpDB()
+    {
+        //Mentioned Connection string make sure that user id and password sufficient previlages
+          sqlcon.ConnectionString = @"Server=MOHANDB\SQLEXPRESS;database=" + dbname + ";uid=ravindran;pwd=srirangam;";
+
+        
+
+        //Enter destination directory where backup file stored
+        string destdir = "D:\\backupdb";
+
+        //Check that directory already there otherwise create 
+        if (!System.IO.Directory.Exists(destdir))
+        {
+            System.IO.Directory.CreateDirectory("D:\\backupdb");
+        }
+        try
+        {
+            //Open connection
+            sqlcon.Open();
+            //query to take backup database
+            sqlcmd = new SqlCommand("backup database NEWGMS17092017 to disk='" + destdir + "\\" + DateTime.Now.ToString("ddMMyyyy_HHmmss") + ".Bak'", sqlcon);
+            sqlcmd.ExecuteNonQuery();
+            //Close connection
+            sqlcon.Close();
+            Response.Write("Backup database successfully");
+        }
+        catch (Exception ex)
+        {
+            g.ShowMessage(this.Page, "Error During backup database!");
+        }
+     }
+ 
+}

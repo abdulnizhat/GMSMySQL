@@ -1,0 +1,69 @@
+﻿using Microsoft.Reporting.WebForms;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Web;
+using System.Web.UI;
+using System.Web.UI.WebControls;
+
+public partial class ChanelReadingReportViewer : System.Web.UI.Page
+{
+    Genreal g = new Genreal();
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (Session["User_ID"] != null && Session["Customer_ID"] != null)
+        {
+            if (!IsPostBack)
+            {
+                // Variables
+                //Warning[] warnings;
+                //string[] streamIds;
+                string instrument = string.Empty;
+                string fromDate = string.Empty;
+                string toDate = string.Empty;
+                try
+                {
+                    if (Request.QueryString["threeParameter"] != null)
+                    {
+                        string getIds = Request.QueryString["threeParameter"].ToString();
+                        string[] str = getIds.Split(',');
+                        fromDate = str[0].ToString();
+                        toDate = str[1].ToString();
+                        instrument = str[2].ToString();
+
+                        DateTime dtf = Convert.ToDateTime(fromDate);
+                       string strdtf = dtf.ToLongDateString();
+
+                        DataSet ds = new DataSet();
+                        ds = g.ReturnData1("Select Instrument_Name, ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8, (CONVERT(nvarchar, date_Time, 105) + '-' + Hours + ':' + Minut + ':00' + Time) as Date From TempTableChanelReadingTB where convert(nvarchar,date_Time, 105) >= '" + fromDate + "' and convert(nvarchar,date_Time, 105) <= '" + toDate + "' and Instrument_Name='" + instrument + "' order by date_Time ");
+                        if (ds.Tables[0].Rows.Count > 0)
+                        {
+                            ReportViewer1.Reset();
+                            ReportViewer1.LocalReport.ReportPath = Server.MapPath("~/ChanelReading.rdlc");
+                            ReportViewer1.ProcessingMode = ProcessingMode.Local;
+                            ReportDataSource rep = new ReportDataSource("ChanelReadingDataSet", ds.Tables[0]);
+                            ReportViewer1.LocalReport.DataSources.Add(rep);
+
+                            ReportViewer1.LocalReport.Refresh();
+                            ReportParameter[] parameter = new ReportParameter[3];
+                            parameter[0] = new ReportParameter("fromdate", fromDate);
+                            parameter[1] = new ReportParameter("todate", toDate);
+                            parameter[2] = new ReportParameter("InstrumentName", instrument);
+                            ReportViewer1.LocalReport.SetParameters(parameter);
+                      }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    g.ShowMessage(this.Page, ex.Message);
+                }
+            }
+
+        }
+        else
+        {
+            Response.Redirect("Login.aspx");
+        }
+    }
+}
